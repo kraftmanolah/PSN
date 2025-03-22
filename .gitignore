@@ -1,0 +1,36 @@
+# General
+node_modules/
+*.log
+*.pyc
+__pycache__/
+.DS_Store
+*.pem
+
+# Next.js (frontend)
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env*
+frontend/.env*.local
+frontend/.pnp
+frontend/.pnp.*
+frontend/.yarn/*
+frontend/.vercel/
+frontend/coverage/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+# Keep .env.local if you want it tracked (optional)
+!frontend/.env.local
+
+# Yarn exceptions (if you use Yarn)
+!frontend/.yarn/patches
+!frontend/.yarn/plugins
+!frontend/.yarn/releases
+!frontend/.yarn/versions
+
+# Django (backend)
+backend/venv/          # Replace with your virtual env folder name
+backend/db.sqlite3     # If using SQLite
+backend/staticfiles/
+backend/media/
+backend/.env

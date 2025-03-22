@@ -1,0 +1,148 @@
+[
+    {
+      "id": 1,
+      "name": "Ceramic Mugs",
+      "image": "/images/mugs.png",
+      "images": ["/images/mug1.png", "/images/mug2.png", "/images/mug3.png"],
+      "price": 3500,
+      "currency": "₦",
+      "description": "per one",
+      "product_description": "Elevate your sipping experience with our customizable ceramic mugs. Ideal for corporate branding, special events, or personal gifts. Made from durable, high-quality ceramic with vibrant print options.",
+      "types": ["Ceramic", "Glass", "Metal"],
+      "colors": ["#000000", "#FF0000", "#FFFF00"],
+      "features": [
+        "Premium Quality: Made from high-grade ceramic for lasting use.",
+        "Customizable: Add logos, names, or designs to make it uniquely yours.",
+        "Microwave & Dishwasher Safe: Easy to clean and maintain without hassle.",
+        "Perfect for Gifting: Ideal for staff appreciation, family celebrations, or promotional items.",
+        "Vibrant Printing: High-quality print ensures your designs stand out."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Notepads",
+      "image": "/images/notepads.png",
+      "images": ["/images/notepad1.png", "/images/notepad2.png", "/images/notepad2.png"],
+      "price": 150000,
+      "currency": "₦",
+      "description": "per 100 copies",
+      "product_description": "Our premium notepads are designed for smooth writing and long-lasting use. Available in various sizes and binding styles, perfect for corporate branding and personal stationery.",
+      "types": ["Hardcover", "Softcover"],
+      "colors": ["#FFFFFF", "#000000"],
+      "features": [
+        "High-quality paper with smooth writing surface.",
+        "Available in multiple sizes and binding styles.",
+        "Custom printing for logos, names, and branding.",
+        "Perfect for corporate gifts and office use."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Face Caps",
+      "image": "/images/facecaps.png",
+      "images": ["/images/facecap1.png", "/images/facecap2.png"],
+      "price": 4000,
+      "currency": "₦",
+      "description": "per one",
+      "product_description": "Stylish and comfortable face caps designed for everyday wear, branding, or promotions. Available in multiple styles with custom embroidery options.",
+      "types": ["Snapback", "Fitted", "Adjustable"],
+      "colors": ["#000000", "#FFFFFF", "#FF0000"],
+      "features": [
+        "Durable, high-quality fabric for long-lasting wear.",
+        "Custom embroidery and print options available.",
+        "Adjustable strap for a perfect fit.",
+        "Ideal for branding, corporate gifts, and fashion."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Courier Bags",
+      "image": "/images/courier-bags.png",
+      "images": ["/images/courier1.png", "/images/courier2.png"],
+      "price": 16000,
+      "currency": "₦",
+      "description": "prices vary per size",
+      "product_description": "Durable and lightweight courier bags, perfect for e-commerce, delivery services, and branding. Available in different sizes with customizable print options.",
+      "types": ["Small", "Medium", "Large"],
+      "colors": ["#FFD700", "#000000", "#FFFFFF"],
+      "features": [
+        "Strong, durable material to protect contents.",
+        "Customizable print options for branding.",
+        "Lightweight yet highly secure.",
+        "Perfect for e-commerce and delivery services."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Drawstring Bags",
+      "image": "/images/drawstring-bags.png",
+      "images": ["/images/drawstring1.png", "/images/drawstring2.png"],
+      "price": 3000,
+      "currency": "₦",
+      "description": "per item",
+      "product_description": "Convenient and stylish drawstring bags for promotions, giveaways, and daily use. Lightweight and available in multiple materials and sizes.",
+      "types": ["Polyester", "Cotton", "Nylon"],
+      "colors": ["#000000", "#FF0000", "#0000FF"],
+      "features": [
+        "Lightweight and easy to carry.",
+        "Available in multiple materials and sizes.",
+        "Custom branding and logo printing available.",
+        "Perfect for promotions, giveaways, and daily use."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Hoodies",
+      "image": "/images/hoodies.png",
+      "images": ["/images/hoodie1.png", "/images/hoodie2.png"],
+      "price": 20000,
+      "currency": "₦",
+      "description": "per item",
+      "product_description": "Cozy and stylish hoodies available in multiple designs. Perfect for corporate branding, events, and casual wear.",
+      "types": ["Pullover", "Zipper", "Sleeveless"],
+      "colors": ["#000000", "#FFFFFF", "#808080"],
+      "features": [
+        "Soft, high-quality fabric for warmth and comfort.",
+        "Custom print and embroidery options.",
+        "Available in multiple styles and sizes.",
+        "Perfect for corporate branding, promotions, and everyday wear."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Greeting Cards",
+      "image": "/images/greeting-cards.png",
+      "images": ["/images/card1.png", "/images/card2.png"],
+      "price": 2500,
+      "currency": "₦",
+      "description": "per item",
+      "product_description": "Beautifully crafted greeting cards with custom designs for birthdays, weddings, and special occasions.",
+      "types": ["Folded", "Flat", "Pop-up"],
+      "colors": ["#FFFFFF", "#FFD700", "#FF0000"],
+      "features": [
+        "High-quality card stock for premium feel.",
+        "Custom printing with your own design and message.",
+        "Available in various sizes and styles.",
+        "Perfect for birthdays, weddings, and corporate gifts."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Jerseys",
+      "image": "/images/jerseys.png",
+      "images": ["/images/jersey1.png", "/images/jersey2.png"],
+      "price": 15000,
+      "currency": "₦",
+      "description": "per item",
+      "product_description": "High-quality sports jerseys designed for performance and comfort. Custom printing options available for teams and individuals.",
+      "types": ["Soccer", "Basketball", "Custom"],
+      "colors": ["#0000FF", "#FFFFFF", "#FF0000"],
+      "features": [
+        "Breathable, moisture-wicking fabric.",
+        "Custom name and number printing available.",
+        "Multiple styles for different sports and activities.",
+        "Ideal for teams, events, and promotions."
+      ]
+    }
+  ]
+  
