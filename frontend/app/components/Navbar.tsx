@@ -1,14 +1,14 @@
 
-
 // "use client";
 
 // import React, { useState, useEffect, useRef } from "react";
 // import Image from "next/image";
+// import { useRouter, usePathname } from "next/navigation";
 // import { useAuth } from "@/app/hooks/useAuth";
 // import useSWR from "swr";
 // import Link from "next/link";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faShoppingCart, faCaretDown, faBars, faSearch } from "@fortawesome/free-solid-svg-icons"; // Added faSearch
+// import { faShoppingCart, faCaretDown, faBars, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 // const fetcher = (url: string, token: string | null) =>
 //   fetch(url, {
@@ -23,7 +23,9 @@
 // const Navbar: React.FC = () => {
 //   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 //   const [isUserMenuOpen, setUserMenuOpen] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState("");
 //   const { token, user, logout } = useAuth();
+//   const router = useRouter();
 //   const { data: cart, error: cartError } = useSWR(
 //     token ? ["http://localhost:8000/api/cart/", token] : null,
 //     ([url, authToken]) => fetcher(url, authToken)
@@ -36,6 +38,20 @@
 //   const toggleUserMenu = (e: React.MouseEvent) => {
 //     e.stopPropagation();
 //     setUserMenuOpen((prev) => !prev);
+//   };
+
+//   const handleSearch = () => {
+//     if (searchQuery.trim()) {
+//       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+//       setSearchQuery("");
+//       setMobileMenuOpen(false);
+//     }
+//   };
+
+//   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//     if (e.key === "Enter") {
+//       handleSearch();
+//     }
 //   };
 
 //   useEffect(() => {
@@ -62,7 +78,7 @@
 //   };
 
 //   const getLinkClass = (path: string) => {
-//     const isActive = typeof window !== "undefined" && window.location.pathname === path;
+//     const isActive = pathname === path;
 //     return isActive
 //       ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1"
 //       : "text-gray-300 hover:text-yellow-400";
@@ -101,18 +117,24 @@
 
 //       {/* Right: Search bar, User, and Cart */}
 //       <div className="flex items-center space-x-3 sm:space-x-4">
-//         {/* Search Bar */}
+//         {/* Search Bar (Desktop) */}
 //         <div className="relative hidden sm:block">
 //           <input
 //             type="text"
 //             placeholder="Search products, categories..."
+//             value={searchQuery}
+//             onChange={(e) => setSearchQuery(e.target.value)}
+//             onKeyPress={handleKeyPress}
 //             className="py-1.5 px-3 w-40 sm:w-48 lg:w-64 rounded-full bg-white text-black placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+//             aria-label="Search products and categories"
 //           />
-//           <FontAwesomeIcon
-//             icon={faSearch} // Changed from faCaretDown to faSearch
+//           <button
+//             onClick={handleSearch}
 //             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-//             size="sm"
-//           />
+//             aria-label="Search"
+//           >
+//             <FontAwesomeIcon icon={faSearch} size="sm" />
+//           </button>
 //         </div>
 
 //         {/* User and Cart */}
@@ -194,13 +216,19 @@
 //               <input
 //                 type="text"
 //                 placeholder="Search products, categories..."
+//                 value={searchQuery}
+//                 onChange={(e) => setSearchQuery(e.target.value)}
+//                 onKeyPress={handleKeyPress}
 //                 className="w-full py-1.5 px-3 rounded-full bg-white text-black placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+//                 aria-label="Search products and categories"
 //               />
-//               <FontAwesomeIcon
-//                 icon={faSearch} // Changed from faCaretDown to faSearch
+//               <button
+//                 onClick={handleSearch}
 //                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-//                 size="sm"
-//               />
+//                 aria-label="Search"
+//               >
+//                 <FontAwesomeIcon icon={faSearch} size="sm" />
+//               </button>
 //             </div>
 //           </div>
 //           <Link href="/" className={getLinkClass("/")} onClick={() => setMobileMenuOpen(false)}>
@@ -286,12 +314,11 @@
 
 // export default Navbar;
 
-// app/components/Navbar.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // Import usePathname
 import { useAuth } from "@/app/hooks/useAuth";
 import useSWR from "swr";
 import Link from "next/link";
@@ -314,8 +341,9 @@ const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { token, user, logout } = useAuth();
   const router = useRouter();
+  const currentPathname = usePathname(); // Assign usePathname() to a variable
   const { data: cart, error: cartError } = useSWR(
-    token ? ["http://localhost:8000/api/cart/", token] : null,
+    token ? [`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart/`, token] : null,
     ([url, authToken]) => fetcher(url, authToken)
   );
 
@@ -366,7 +394,7 @@ const Navbar: React.FC = () => {
   };
 
   const getLinkClass = (path: string) => {
-    const isActive = typeof window !== "undefined" && window.location.pathname === path;
+    const isActive = currentPathname === path; // Use the assigned variable
     return isActive
       ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1"
       : "text-gray-300 hover:text-yellow-400";
