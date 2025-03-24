@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -32,17 +31,11 @@ import os
 import pymysql
 pymysql.install_as_MySQLdb()
 
-
-
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
 from django.conf import settings
 from django.conf.urls.static import static
-
-    
 
 # Application definition
 
@@ -60,7 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',  # Add this for Django Rest Framework
-    'api', #Add app here
+    'api',  # Add app here
     'accounts',
     'corsheaders',
     "django_json_widget"
@@ -88,7 +81,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -116,6 +108,7 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -136,7 +129,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -150,7 +142,6 @@ DATABASES = {
         'PORT': '3306',                # Default MySQL port
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -170,7 +161,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -182,7 +172,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
@@ -192,3 +181,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email Configuration for Development (Using Hosting Provider's SMTP Server)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_HOST = 'premium288.web-hosting.com'  # Replace with your hosting provider's SMTP host
+#EMAIL_PORT = 465  # Common port for TLS
+#EMAIL_USE_TLS = True  # Use TLS for secure connection
+#EMAIL_HOST_USER = 'noreply@printshopnaija.com'  # Replace with your email address
+#EMAIL_HOST_PASSWORD = 'mUX1;G,2r;K~'  # Replace with your email password
+DEFAULT_FROM_EMAIL = 'noreply@printshopnaija.com'  # Replace with your email address
+FRONTEND_URL = 'http://localhost:3000'  # Matches your localhost URL for development
+

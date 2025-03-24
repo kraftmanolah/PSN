@@ -1,5 +1,4 @@
 
-
 # from rest_framework import viewsets, permissions, status
 # from rest_framework.views import APIView
 # from rest_framework.response import Response
@@ -103,6 +102,36 @@
 #         except CartItem.DoesNotExist:
 #             return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
 
+#     @action(detail=True, methods=['put'], url_path=r'items/(?P<item_id>\d+)/update')
+#     def update_item(self, request, pk=None, item_id=None):
+#         cart = self.get_object()
+#         try:
+#             cart_item = CartItem.objects.get(cart=cart, id=item_id)
+#             quantity = int(request.data.get('quantity', cart_item.quantity))
+#             design_file = request.FILES.get('design_file', cart_item.design_file)
+#             additional_info = request.data.get('additional_info', cart_item.additional_info)
+#             color = request.data.get('color', cart_item.color)
+
+#             if quantity < 1:
+#                 return Response({'error': 'Quantity must be at least 1'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             cart_item.quantity = quantity
+#             cart_item.design_file = design_file if design_file != '' else cart_item.design_file
+#             cart_item.additional_info = additional_info if additional_info != '' else cart_item.additional_info
+#             cart_item.color = color if color != '' else cart_item.color
+
+#             # If design_file or additional_info is explicitly set to an empty string, clear the field
+#             if 'design_file' in request.data and request.data['design_file'] == '':
+#                 cart_item.design_file = None
+#             if 'additional_info' in request.data and request.data['additional_info'] == '':
+#                 cart_item.additional_info = None
+
+#             cart_item.save()
+#             serializer = CartItemSerializer(cart_item)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         except CartItem.DoesNotExist:
+#             return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+
 # class OrderViewSet(viewsets.ModelViewSet):
 #     serializer_class = OrderSerializer
 #     permission_classes = [permissions.IsAuthenticated]
@@ -146,12 +175,15 @@
 #         cart.items.all().delete()
 #         serializer = OrderSerializer(order)
 #         return Response(serializer.data)
+
+# backend/api/views.py
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Product, ProductCategory, Cart, CartItem, Order, OrderItem, Delivery
 from .serializers import ProductSerializer, ProductCategorySerializer, CartSerializer, CartItemSerializer, OrderSerializer
+from django.db.models import Q  # For complex queries
 
 class ProductList(APIView):
     def get(self, request):
@@ -178,6 +210,25 @@ class ProductViewSet(viewsets.ModelViewSet):
         except Product.DoesNotExist:
             return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
+class SearchAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        query = request.query_params.get("q", "")
+        if not query:
+            return Response({"error": "Query parameter 'q' is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Search across name, description, product_description, and product_category__name
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(product_description__icontains=query) |
+            Q(product_category__name__icontains=query)
+        ).distinct()
+
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -188,7 +239,7 @@ class CartViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         cart, created = Cart.objects.get_or_create(user=request.user)
         serializer = self.get_serializer(cart)
-        return Response(serializer.data)  # Returns single object, not list
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def add_item(self, request, pk=None):
@@ -267,7 +318,6 @@ class CartViewSet(viewsets.ModelViewSet):
             cart_item.additional_info = additional_info if additional_info != '' else cart_item.additional_info
             cart_item.color = color if color != '' else cart_item.color
 
-            # If design_file or additional_info is explicitly set to an empty string, clear the field
             if 'design_file' in request.data and request.data['design_file'] == '':
                 cart_item.design_file = None
             if 'additional_info' in request.data and request.data['additional_info'] == '':

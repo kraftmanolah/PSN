@@ -53,7 +53,7 @@ export function useAuth() {
             });
             setUser(res.data);
             setLoading(false);
-            router.push("/dashboard"); // Redirect after successful login
+            // router.push("/dashboard"); // Redirect after successful login
         } catch (err: AxiosError | any) {
             console.error("Failed to fetch user data on login:", err);
             setError("Failed to fetch user data after login.");
