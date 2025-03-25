@@ -183,12 +183,24 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email Configuration for Development (Using Hosting Provider's SMTP Server)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #EMAIL_HOST = 'premium288.web-hosting.com'  # Replace with your hosting provider's SMTP host
 #EMAIL_PORT = 465  # Common port for TLS
 #EMAIL_USE_TLS = True  # Use TLS for secure connection
 #EMAIL_HOST_USER = 'noreply@printshopnaija.com'  # Replace with your email address
 #EMAIL_HOST_PASSWORD = 'mUX1;G,2r;K~'  # Replace with your email password
-DEFAULT_FROM_EMAIL = 'noreply@printshopnaija.com'  # Replace with your email address
+#DEFAULT_FROM_EMAIL = 'noreply@printshopnaija.com'  # Replace with your email address
+#FRONTEND_URL = 'http://localhost:3000'  # Matches your localhost URL for development
+
+# settings.py (updated email configuration)
+# settings.py (updated email configuration)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'premium219.web-hosting.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True  # Port 465 uses SSL
+EMAIL_USE_TLS = False  # Disable TLS since we're using SSL
+EMAIL_HOST_USER = 'noreply@printshopnaija.com.ng'  # Updated email address
+EMAIL_HOST_PASSWORD = 'mUX1;G,2r;K~'  # Your email password
+DEFAULT_FROM_EMAIL = 'noreply@printshopnaija.com.ng'  # Updated to match EMAIL_HOST_USER
 FRONTEND_URL = 'http://localhost:3000'  # Matches your localhost URL for development
 

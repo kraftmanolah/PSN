@@ -1,4 +1,9 @@
+
+
+"use client";
+
 import React from "react";
+import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFacebookF,
@@ -12,9 +17,15 @@ const Footer: React.FC = () => {
     <footer className="bg-black text-white py-12">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Column 1: Logo */}
-        <div>
-          <h3 className="text-2xl font-bold mb-2">Printshop Naija</h3>
-          <p className="text-gray-400 text-sm">Your Ideas, Perfectly Printed!</p>
+        <div className="flex flex-col items-center md:items-start">
+          <Image
+            src="/images/logo.png"
+            alt="Printshop Naija Logo"
+            width={120} // Reduced from 150
+            height={40} // Reduced from 50
+            className="object-contain"
+          />
+          <p className="text-gray-400 text-sm mt-2">Your Ideas, Perfectly Printed!</p>
         </div>
 
         {/* Column 2: Support */}
@@ -77,9 +88,12 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
+      {/* Horizontal Rule */}
+      <hr className="border-gray-600 my-8" />
+
       {/* Copyright */}
-      <div className="text-center mt-8 text-gray-400 text-sm">
-        &copy; 2024 PrintShop Naija. All rights reserved.
+      <div className="text-center text-gray-400 text-sm">
+        © 2024 PrintShop Naija. All rights reserved.
       </div>
     </footer>
   );

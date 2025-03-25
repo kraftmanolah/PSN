@@ -147,6 +147,7 @@ class UserDetail(views.APIView):
         serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
+# accounts/views.py (updated PasswordResetRequestView)
 class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
 
@@ -176,14 +177,12 @@ class PasswordResetRequestView(generics.GenericAPIView):
         # Send the email, but handle failures gracefully
         try:
             print("Attempting to send email...")
-            connection = get_connection('django.core.mail.backends.console.EmailBackend')
             send_mail(
                 subject='Password Reset Request',
                 message=f'Click the link to reset your password: {reset_link}',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=False,
-                connection=connection,
             )
             print("Email sent successfully.")
         except Exception as e:
@@ -193,7 +192,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
             return Response({'detail': 'If an account with this email exists, a password reset link has been sent.'}, status=status.HTTP_200_OK)
 
         return Response({'detail': 'A password reset link has been sent to your email.'}, status=status.HTTP_200_OK)
-
+        
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
 
