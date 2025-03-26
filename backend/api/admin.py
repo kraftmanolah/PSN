@@ -1,58 +1,88 @@
-# from django.contrib import admin
-# from .models import Product
+# # from django.contrib import admin
+# # from .models import Product
 
-# # Register your models here.
+# # # Register your models here.
 
 
 from django.contrib import admin
 from django.db import models
-from django_json_widget.widgets import JSONEditorWidget  # Install this package if not already installed
-from .models import Product, ProductCategory, Cart, CartItem, Order, OrderItem, ProductImage
+from django_json_widget.widgets import JSONEditorWidget
+from .models import Product, ProductCategory, Cart, CartItem, Order, OrderItem, ProductImage, Delivery
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "currency", "created_at")  # Fields displayed in the admin list
-    search_fields = ("name",)  # Enable search by name
-    list_filter = ("currency", "created_at")  # Filters for easier navigation
+    list_display = ("name", "price", "currency", "created_at")
+    search_fields = ("name",)
+    list_filter = ("currency", "created_at")
 
 admin.site.register(Product, ProductAdmin)
 
-# Register ProductCategory so it appears in the Django admin panel
 @admin.register(ProductCategory)
 class ProductCategoryAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "created_at")  # Customize how categories are displayed
-    search_fields = ("name",)  # Enable search by category name
+    list_display = ("id", "name", "created_at")
+    search_fields = ("name",)
 
-# Register ProductImage model (for thumbnails)
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ("id", "product", "image", "is_main")  # Display thumbnail details
-    search_fields = ("product__name",)  # Enable search by product name
-    list_filter = ("is_main",)  # Filter by whether it's the main image
+    list_display = ("id", "product", "image", "is_main")
+    search_fields = ("product__name",)
+    list_filter = ("is_main",)
 
-# Register Cart model
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "created_at")  # Display cart ID, user email, and creation time
-    search_fields = ("user__email",)  # Enable search by user email
-    list_filter = ("created_at",)  # Filter by creation time
+    list_display = ("id", "user", "created_at")
+    search_fields = ("user__email",)
+    list_filter = ("created_at",)
 
-# Register CartItem model
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_display = ("id", "cart", "product", "quantity")  # Display cart item details
-    search_fields = ("product__name", "cart__user__email")  # Enable search by product name or user email
-    list_filter = ("quantity",)  # Filter by quantity
+    list_display = ("id", "cart", "product", "quantity")
+    search_fields = ("product__name", "cart__user__email")
+    list_filter = ("quantity",)
 
-# Register Order model
+# Inline for Order Items in Order detail page
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0  # No extra empty rows
+
+# Inline for Delivery in Order detail page
+class DeliveryInline(admin.StackedInline):
+    model = Delivery
+    extra = 0  # No extra empty rows
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "total_amount", "status", "delivery_option", "created_at")  # Display order details
-    search_fields = ("user__email", "transaction_id")  # Enable search by user email or transaction ID
-    list_filter = ("status", "delivery_option", "created_at")  # Filter by status, delivery option, and creation time
+    list_display = (
+        "id",
+        "user",
+        "total_amount",
+        "status",
+        "delivery_option",
+        "delivery_address",
+        "delivery_city",
+        "delivery_state",
+        "created_at",
+    )
+    search_fields = ("user__email", "transaction_id")
+    list_filter = ("status", "delivery_option", "created_at")
+    list_display_links = ("id", "user")
+    inlines = [OrderItemInline, DeliveryInline]  # Add inlines for Order Items and Delivery
 
-# Register OrderItem model
+    # Custom methods to display delivery details
+    def delivery_address(self, obj):
+        return obj.delivery.address if obj.delivery else "-"
+    delivery_address.short_description = "Delivery Address"
+
+    def delivery_city(self, obj):
+        return obj.delivery.city if obj.delivery else "-"
+    delivery_city.short_description = "Delivery City"
+
+    def delivery_state(self, obj):
+        return obj.delivery.state if obj.delivery else "-"
+    delivery_state.short_description = "Delivery State"
+
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ("id", "order", "product", "quantity", "price")  # Display order item details
-    search_fields = ("product__name", "order__user__email")  # Enable search by product name or user email
-    list_filter = ("quantity", "price")  # Filter by quantity and price
+    list_display = ("id", "order", "product", "quantity", "price", "design_file", "additional_info")
+    search_fields = ("product__name", "order__user__email")
+    list_filter = ("quantity", "price")
+    list_display_links = ("id", "order")

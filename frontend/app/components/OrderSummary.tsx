@@ -20,7 +20,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ cart, order, deliveryOption
   const total = cart?.total || order?.total_amount || 0;
   const itemCount = cart?.item_count || (order?.items.length || 0);
   const deliveryFee = deliveryOption === 'delivery' ? 2500 : 0; // ₦2,500 delivery fee
-  const grandTotal = total + deliveryFee;
+  const grandTotal = total;
 
   return (
     <div className="w-full md:w-1/3 bg-gray-100 p-4 rounded shadow-md">

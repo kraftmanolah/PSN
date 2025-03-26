@@ -205,5 +205,5 @@ DEFAULT_FROM_EMAIL = 'noreply@printshopnaija.com.ng'  # Updated to match EMAIL_H
 FRONTEND_URL = 'http://localhost:3000'  # Matches your localhost URL for development
 
 # Paystack Configuration (replace with your actual test keys)
-PAYSTACK_SECRET_KEY = 'sk_test_d5793c183259755e9119164c18457386734f3f09'
+PAYSTACK_SECRET_KEY = "sk_test_d5793c183259755e9119164c18457386734f3f09"
 

@@ -21,6 +21,9 @@ export default {
           "100%": { transform: "translateX(0)", opacity: "1" }, // Fully visible
         },
       },
+      fontFamily: {
+        sans: ['"Lato"', 'sans-serif'], // Set Lato as the default sans font
+      },
     },
   },
   plugins: [],

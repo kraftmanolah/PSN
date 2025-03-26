@@ -1,21 +1,19 @@
 
-
-// // app/order/summary/page.tsx (full updated code)
 // "use client";
 
-// import { useState, useEffect } from "react";
+// import { useState, useEffect, FormEvent } from "react";
 // import { useRouter, useSearchParams } from "next/navigation";
 // import { CartItem } from "@/types/product";
 // import Link from "next/link";
 // import Image from "next/image";
 // import axios from "axios";
 // import Breadcrumbs from "@/app/components/Breadcrumbs";
-// import Script from "next/script";
+// import { useAuth } from "@/app/hooks/useAuth";
 
 // export default function OrderSummaryPage() {
+//   const { token, user, loading } = useAuth();
 //   const searchParams = useSearchParams();
 //   const router = useRouter();
-//   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 //   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 //   const deliveryOption = searchParams.get("deliveryOption") as "pickup" | "delivery" | null;
@@ -28,8 +26,10 @@
 //   const orderIdFromQuery = searchParams.get("orderId");
 //   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 //   const [orderId, setOrderId] = useState<number | null>(orderIdFromQuery ? parseInt(orderIdFromQuery) : null);
+//   const [scriptLoaded, setScriptLoaded] = useState(false); // Track script loading
 
 //   useEffect(() => {
+//     if (loading) return;
 //     if (!token) {
 //       setErrorMsg("Please log in to confirm your order.");
 //       router.push("/signin");
@@ -40,7 +40,7 @@
 //     if (deliveryOption === "delivery" && (!deliveryDetails?.address || !deliveryDetails?.city || !deliveryDetails?.state)) {
 //       setErrorMsg("Delivery details are incomplete. Please return to the cart page to fill them out.");
 //     }
-//   }, [token, deliveryOption, deliveryDetails, router]);
+//   }, [token, loading, deliveryOption, deliveryDetails, router]);
 
 //   const handleCreateOrder = async () => {
 //     if (!cartItems.length || !token) {
@@ -76,7 +76,19 @@
 //     }
 //   };
 
-//   const handleProceedToPayment = async () => {
+//   const handleProceedToPayment = async (e: FormEvent<HTMLFormElement>) => {
+//     e.preventDefault();
+
+//     // Load Paystack script dynamically if not already loaded
+//     if (!scriptLoaded) {
+//       const script = document.createElement("script");
+//       script.src = "https://js.paystack.co/v1/inline.js";
+//       script.async = true;
+//       script.onload = () => setScriptLoaded(true);
+//       script.onerror = () => setErrorMsg("Failed to load Paystack script. Please try again.");
+//       e.currentTarget.appendChild(script); // Append script to the form
+//     }
+
 //     const id = orderId || (await handleCreateOrder());
 //     if (!id) return;
 
@@ -88,32 +100,42 @@
 //       );
 //       const { authorization_url, reference } = response.data.data;
 
-//       const handler = (window as any).PaystackPop.setup({
-//         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here", // Add to .env.local
-//         email: localStorage.getItem("email") || "user@example.com", // Ideally fetch from user profile
-//         amount: cartTotal * 100, // Convert to kobo
+//       if (!window.PaystackPop) {
+//         setErrorMsg("Paystack script not loaded yet. Please try again.");
+//         return;
+//       }
+
+//       const handler = window.PaystackPop.setup({
+//         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here",
+//         email: user?.email || localStorage.getItem("email") || "user@example.com",
+//         amount: cartTotal * 100,
 //         currency: "NGN",
 //         ref: reference,
 //         callback: async (response: any) => {
-//           const verifyResponse = await axios.post(
-//             `${backendUrl}/api/orders/${id}/verify_payment/`,
-//             { reference: response.reference },
-//             { headers: { Authorization: `Token ${token}` } }
-//           );
-//           if (verifyResponse.data.status === "Payment verified") {
-//             localStorage.removeItem("deliveryDetails");
-//             router.push("/profile"); // Redirect to profile or success page
-//           } else {
-//             setErrorMsg("Payment verification failed.");
+//           try {
+//             const verifyResponse = await axios.post(
+//               `${backendUrl}/api/orders/${id}/verify_payment/`,
+//               { reference: response.reference },
+//               { headers: { Authorization: `Token ${token}` } }
+//             );
+//             if (verifyResponse.data.status === "Payment verified") {
+//               localStorage.removeItem("deliveryDetails");
+//               router.push("/profile");
+//             } else {
+//               setErrorMsg("Payment verification failed.");
+//             }
+//           } catch (err) {
+//             setErrorMsg("Error verifying payment.");
 //           }
 //         },
 //         onClose: () => {
-//           setErrorMsg("Payment window closed.");
+//           setErrorMsg("Payment window closed. Please try again.");
 //         },
 //       });
 //       handler.openIframe();
 //     } catch (err) {
-//       setErrorMsg("Failed to initialize payment.");
+//       setErrorMsg("Failed to initialize payment. Please try again.");
+//       console.error(err);
 //     }
 //   };
 
@@ -123,14 +145,14 @@
 //   }, 0) || 0;
 
 //   const subtotal = calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal;
-//   const total = subtotal; // No fixed delivery fee added
+//   const total = subtotal;
 
+//   if (loading) return <div className="p-4">Loading...</div>;
 //   if (errorMsg) return <div className="p-4 text-red-500">{errorMsg}</div>;
 //   if (!deliveryOption) return <div className="p-4">Loading...</div>;
 
 //   return (
 //     <div className="min-h-screen bg-gray-50">
-//       <Script src="https://js.paystack.co/v1/inline.js" />
 //       <div className="mx-4 sm:mx-6 lg:mx-12 xl:mx-16 py-6 sm:py-8">
 //         <div className="mx-0">
 //           <Breadcrumbs />
@@ -216,12 +238,14 @@
 //               <p className="text-base sm:text-lg font-bold">Total:</p>
 //               <p className="text-lg sm:text-xl font-bold">₦{total.toLocaleString()}</p>
 //             </div>
-//             <button
-//               onClick={handleProceedToPayment}
-//               className="w-full mt-4 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 text-sm sm:text-base"
-//             >
-//               Proceed to Payment
-//             </button>
+//             <form onSubmit={handleProceedToPayment}>
+//               <button
+//                 type="submit"
+//                 className="w-full mt-4 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 text-sm sm:text-base"
+//               >
+//                 Proceed to Payment
+//               </button>
+//             </form>
 //           </div>
 //           <Link href="/cart" className="text-yellow-500 inline-block hover:text-yellow-600 text-sm sm:text-base">
 //             <span className="mr-2">⟵</span> Back to Cart
@@ -234,19 +258,19 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CartItem } from "@/types/product";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
-import Script from "next/script";
+import { useAuth } from "@/app/hooks/useAuth";
 
 export default function OrderSummaryPage() {
+  const { token, user, loading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
   const deliveryOption = searchParams.get("deliveryOption") as "pickup" | "delivery" | null;
@@ -259,8 +283,10 @@ export default function OrderSummaryPage() {
   const orderIdFromQuery = searchParams.get("orderId");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(orderIdFromQuery ? parseInt(orderIdFromQuery) : null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
+    if (loading) return;
     if (!token) {
       setErrorMsg("Please log in to confirm your order.");
       router.push("/signin");
@@ -271,7 +297,7 @@ export default function OrderSummaryPage() {
     if (deliveryOption === "delivery" && (!deliveryDetails?.address || !deliveryDetails?.city || !deliveryDetails?.state)) {
       setErrorMsg("Delivery details are incomplete. Please return to the cart page to fill them out.");
     }
-  }, [token, deliveryOption, deliveryDetails, router]);
+  }, [token, loading, deliveryOption, deliveryDetails, router]);
 
   const handleCreateOrder = async () => {
     if (!cartItems.length || !token) {
@@ -307,7 +333,19 @@ export default function OrderSummaryPage() {
     }
   };
 
-  const handleProceedToPayment = async () => {
+  const handleProceedToPayment = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Load Paystack script dynamically if not already loaded
+    if (!scriptLoaded) {
+      const script = document.createElement("script");
+      script.src = "https://js.paystack.co/v1/inline.js";
+      script.async = true;
+      script.onload = () => setScriptLoaded(true);
+      script.onerror = () => setErrorMsg("Failed to load Paystack script. Please try again.");
+      e.currentTarget.appendChild(script);
+    }
+
     const id = orderId || (await handleCreateOrder());
     if (!id) return;
 
@@ -319,28 +357,40 @@ export default function OrderSummaryPage() {
       );
       const { authorization_url, reference } = response.data.data;
 
-      const handler = (window as any).PaystackPop.setup({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here", // Replace with your test public key
-        email: localStorage.getItem("email") || "user@example.com", // Fetch from user profile if possible
-        amount: cartTotal * 100, // Paystack expects amount in kobo (NGN smallest unit)
-        currency: "NGN",
-        ref: reference, // Unique reference from your backend
-        callback: async (response: any) => {
-          try {
-            const verifyResponse = await axios.post(
-              `${backendUrl}/api/orders/${id}/verify_payment/`,
-              { reference: response.reference },
-              { headers: { Authorization: `Token ${token}` } }
-            );
-            if (verifyResponse.data.status === "Payment verified") {
-              localStorage.removeItem("deliveryDetails"); // Clear delivery details post-payment
-              router.push("/profile"); // Redirect to profile or success page
-            } else {
-              setErrorMsg("Payment verification failed.");
-            }
-          } catch (err) {
-            setErrorMsg("Error verifying payment.");
+      // Wait for the script to load if not already loaded
+      if (!window.PaystackPop) {
+        setErrorMsg("Paystack script not loaded yet. Please try again.");
+        return;
+      }
+
+      // Define the verification logic outside the callback
+      const verifyPayment = async (reference: string) => {
+        try {
+          const verifyResponse = await axios.post(
+            `${backendUrl}/api/orders/${id}/verify_payment/`,
+            { reference },
+            { headers: { Authorization: `Token ${token}` } }
+          );
+          if (verifyResponse.data.status === "Payment verified") {
+            localStorage.removeItem("deliveryDetails");
+            router.push("/profile");
+          } else {
+            setErrorMsg("Payment verification failed.");
           }
+        } catch (err) {
+          setErrorMsg("Error verifying payment.");
+        }
+      };
+
+      const handler = window.PaystackPop.setup({
+        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here",
+        email: user?.email || localStorage.getItem("email") || "user@example.com",
+        amount: cartTotal * 100,
+        currency: "NGN",
+        ref: reference,
+        callback: (response: any) => {
+          // Call the async function outside the callback
+          verifyPayment(response.reference);
         },
         onClose: () => {
           setErrorMsg("Payment window closed. Please try again.");
@@ -359,14 +409,14 @@ export default function OrderSummaryPage() {
   }, 0) || 0;
 
   const subtotal = calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal;
-  const total = subtotal; // No delivery fee added yet
+  const total = subtotal;
 
+  if (loading) return <div className="p-4">Loading...</div>;
   if (errorMsg) return <div className="p-4 text-red-500">{errorMsg}</div>;
   if (!deliveryOption) return <div className="p-4">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Script src="https://js.paystack.co/v1/inline.js" strategy="afterInteractive" />
       <div className="mx-4 sm:mx-6 lg:mx-12 xl:mx-16 py-6 sm:py-8">
         <div className="mx-0">
           <Breadcrumbs />
@@ -452,12 +502,14 @@ export default function OrderSummaryPage() {
               <p className="text-base sm:text-lg font-bold">Total:</p>
               <p className="text-lg sm:text-xl font-bold">₦{total.toLocaleString()}</p>
             </div>
-            <button
-              onClick={handleProceedToPayment}
-              className="w-full mt-4 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 text-sm sm:text-base"
-            >
-              Proceed to Payment
-            </button>
+            <form onSubmit={handleProceedToPayment}>
+              <button
+                type="submit"
+                className="w-full mt-4 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 text-sm sm:text-base"
+              >
+                Proceed to Payment
+              </button>
+            </form>
           </div>
           <Link href="/cart" className="text-yellow-500 inline-block hover:text-yellow-600 text-sm sm:text-base">
             <span className="mr-2">⟵</span> Back to Cart

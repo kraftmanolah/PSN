@@ -1,4 +1,3 @@
-# accounts/views.py
 from rest_framework import generics, status, permissions, views
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -103,14 +102,36 @@ class DeliveryDetailsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        details, _ = DeliveryDetails.objects.get_or_create(user=request.user)
-        serializer = DeliveryDetailsSerializer(details)
-        return Response(serializer.data)
+        try:
+            details = DeliveryDetails.objects.get(user=request.user)
+            serializer = DeliveryDetailsSerializer(details)
+            return Response(serializer.data)
+        except DeliveryDetails.DoesNotExist:
+            return Response({'address': '', 'city': '', 'state': '', 'postcode': ''})
 
     def patch(self, request):
-        details, _ = DeliveryDetails.objects.get_or_create(user=request.user)
+        try:
+            details = DeliveryDetails.objects.get(user=request.user)
+        except DeliveryDetails.DoesNotExist:
+            details = None
+
+        if not details:
+            serializer = DeliveryDetailsSerializer(data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = DeliveryDetailsSerializer(details, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        try:
+            details = DeliveryDetails.objects.get(user=request.user)
+            details.delete()
+            return Response({'detail': 'Delivery details deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        except DeliveryDetails.DoesNotExist:
+            return Response({'detail': 'No delivery details found.'}, status=status.HTTP_404_NOT_FOUND)
