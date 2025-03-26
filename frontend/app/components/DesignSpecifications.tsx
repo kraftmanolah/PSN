@@ -1,68 +1,58 @@
 
+
 // "use client";
 
-// import React, { useRef, useState, useEffect } from "react";
+// import React, { useRef, useState } from "react";
 
 // interface DesignSpecificationsProps {
 //   setDesignFile: (file: File | null) => void;
 //   setAdditionalInfo: (info: string) => void;
+//   designFile: File | null;
+//   additionalInfo: string;
+//   isEditingInfo: boolean;
+//   onSaveInfo: () => void;
+//   onEditInfo: () => void;
+//   setIsEditingInfo: (value: boolean) => void; // Add setIsEditingInfo to props
 // }
 
-// const DesignSpecifications: React.FC<DesignSpecificationsProps> = ({ setDesignFile, setAdditionalInfo }) => {
-//   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-//   const [customDesignFile, setCustomDesignFile] = useState<File | null>(null);
-//   const [localAdditionalInfo, setLocalAdditionalInfo] = useState<string>("");
+// const DesignSpecifications: React.FC<DesignSpecificationsProps> = ({
+//   setDesignFile,
+//   setAdditionalInfo,
+//   designFile,
+//   additionalInfo,
+//   isEditingInfo,
+//   onSaveInfo,
+//   onEditInfo,
+//   setIsEditingInfo,
+// }) => {
 //   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
 //   const [showCustomDesignOptions, setShowCustomDesignOptions] = useState(false);
 //   const [selectedOption, setSelectedOption] = useState<"upload" | "custom" | "">("");
 //   const uploadInputRef = useRef<HTMLInputElement>(null);
 //   const customUploadRef = useRef<HTMLInputElement>(null);
 
-//   useEffect(() => {
-    
-//   }, [setAdditionalInfo]);
-
 //   const handleUploadDesign = (event: React.ChangeEvent<HTMLInputElement>) => {
 //     if (event.target.files && event.target.files.length > 0) {
 //       const file = event.target.files[0];
-//       setUploadedFile(file);
 //       setDesignFile(file);
 //       setSelectedOption("upload");
-//       setCustomDesignFile(null);
-//       localStorage.setItem("uploadedFile", JSON.stringify({ name: file.name, size: file.size }));
 //     }
-//   };
-
-//   const removeUploadedFile = () => {
-//     setUploadedFile(null);
-//     setDesignFile(null);
-//     setSelectedOption((prev) => (prev === "upload" ? "" : prev));
-//     localStorage.removeItem("uploadedFile");
 //   };
 
 //   const handleUploadCustomDesign = (event: React.ChangeEvent<HTMLInputElement>) => {
 //     if (event.target.files && event.target.files.length > 0) {
 //       const file = event.target.files[0];
-//       setCustomDesignFile(file);
 //       setDesignFile(file);
 //       setSelectedOption("custom");
-//       setUploadedFile(null);
-//       localStorage.setItem("uploadedFile", JSON.stringify({ name: file.name, size: file.size }));
 //     }
 //   };
 
-//   const removeCustomDesignFile = () => {
-//     setCustomDesignFile(null);
-//     setDesignFile(null);
-//     setSelectedOption("");
-//     localStorage.removeItem("uploadedFile");
-//   };
-
-//   const removeAdditionalInfo = () => {
-//     setLocalAdditionalInfo("");
-//     setAdditionalInfo("");
-//     localStorage.removeItem("additionalInfo");
-//   };
+//   // Open the modal when editing
+//   React.useEffect(() => {
+//     if (isEditingInfo) {
+//       setShowAdditionalInfo(true);
+//     }
+//   }, [isEditingInfo]);
 
 //   return (
 //     <div className="mt-4">
@@ -73,7 +63,7 @@
 //             selectedOption === "custom" ? "opacity-50 pointer-events-none" : ""
 //           }`}
 //         >
-//           {!uploadedFile ? (
+//           {!designFile || selectedOption !== "upload" ? (
 //             <>
 //               <span className="text-3xl">📤</span>
 //               <p className="text-gray-600 font-medium mt-2">Upload your Own Design</p>
@@ -100,29 +90,15 @@
 //               <p className="text-gray-600 font-medium mb-2">Custom Design</p>
 //               <div className="bg-gray-100 p-3 rounded-lg w-full flex justify-between items-center">
 //                 <div>
-//                   <p className="text-gray-700 font-medium">{uploadedFile.name}</p>
+//                   <p className="text-gray-700 font-medium">{designFile.name}</p>
 //                   <p className="text-xs text-green-600">
-//                     ✅ 100% ({(uploadedFile.size / 1024).toFixed(2)}KB) • Upload Successful
+//                     ✅ 100% ({(designFile.size / 1024).toFixed(2)}KB) • Upload Successful
 //                   </p>
 //                 </div>
-//                 <button className="text-red-500" onClick={removeUploadedFile}>
-//                   🗑️
-//                 </button>
 //               </div>
 //             </>
 //           )}
-//           {localAdditionalInfo && (
-//             <div className="bg-gray-100 p-3 rounded-lg w-full mt-3 flex justify-between items-center">
-//               <div>
-//                 <p className="text-gray-700 font-medium">Additional Information</p>
-//                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{localAdditionalInfo}</p>
-//               </div>
-//               <button className="text-red-500" onClick={removeAdditionalInfo}>
-//                 🗑️
-//               </button>
-//             </div>
-//           )}
-//           {!localAdditionalInfo && (
+//           {!additionalInfo && (
 //             <button
 //               className="mt-3 text-yellow-500 font-semibold"
 //               onClick={() => setShowAdditionalInfo(true)}
@@ -150,7 +126,7 @@
 //             </button>
 //           ) : (
 //             <>
-//               {!customDesignFile ? (
+//               {!designFile || selectedOption !== "custom" ? (
 //                 <button
 //                   className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded-lg"
 //                   onClick={() => customUploadRef.current?.click()}
@@ -160,14 +136,11 @@
 //               ) : (
 //                 <div className="bg-gray-100 p-3 rounded-lg w-full flex justify-between items-center mt-3">
 //                   <div>
-//                     <p className="text-gray-700 font-medium">{customDesignFile.name}</p>
+//                     <p className="text-gray-700 font-medium">{designFile.name}</p>
 //                     <p className="text-xs text-green-600">
-//                       ✅ 100% ({(customDesignFile.size / 1024).toFixed(2)}KB) • Upload Successful
+//                       ✅ 100% ({(designFile.size / 1024).toFixed(2)}KB) • Upload Successful
 //                     </p>
 //                   </div>
-//                   <button className="text-red-500" onClick={removeCustomDesignFile}>
-//                     🗑️
-//                   </button>
 //                 </div>
 //               )}
 //               <input
@@ -177,18 +150,7 @@
 //                 onChange={handleUploadCustomDesign}
 //                 accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 //               />
-//               {localAdditionalInfo && (
-//                 <div className="bg-gray-100 p-3 rounded-lg w-full mt-3 flex justify-between items-center">
-//                   <div>
-//                     <p className="text-gray-700 font-medium">Additional Information</p>
-//                     <p className="text-sm text-gray-600 whitespace-pre-wrap">{localAdditionalInfo}</p>
-//                   </div>
-//                   <button className="text-red-500" onClick={removeAdditionalInfo}>
-//                     🗑️
-//                   </button>
-//                 </div>
-//               )}
-//               {!localAdditionalInfo && (
+//               {!additionalInfo && (
 //                 <button
 //                   className="mt-3 text-yellow-500 font-semibold"
 //                   onClick={() => setShowAdditionalInfo(true)}
@@ -205,7 +167,12 @@
 //           <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg relative">
 //             <button
 //               className="absolute top-3 right-3 text-gray-600 text-xl"
-//               onClick={() => setShowAdditionalInfo(false)}
+//               onClick={() => {
+//                 setShowAdditionalInfo(false);
+//                 if (isEditingInfo) {
+//                   setIsEditingInfo(false); // Reset editing state if closing without saving
+//                 }
+//               }}
 //             >
 //               ✖
 //             </button>
@@ -213,14 +180,19 @@
 //             <textarea
 //               className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-yellow-500"
 //               rows={4}
-//               value={localAdditionalInfo}
-//               onChange={(e) => setLocalAdditionalInfo(e.target.value)}
+//               value={additionalInfo}
+//               onChange={(e) => setAdditionalInfo(e.target.value)}
 //               placeholder="Add extra information for better service..."
 //             ></textarea>
 //             <div className="flex justify-end gap-2 mt-4">
 //               <button
 //                 className="px-4 py-2 bg-gray-300 rounded-lg"
-//                 onClick={() => setShowAdditionalInfo(false)}
+//                 onClick={() => {
+//                   setShowAdditionalInfo(false);
+//                   if (isEditingInfo) {
+//                     setIsEditingInfo(false); // Reset editing state if closing without saving
+//                   }
+//                 }}
 //               >
 //                 Back
 //               </button>
@@ -228,8 +200,7 @@
 //                 className="px-4 py-2 bg-yellow-500 text-white rounded-lg"
 //                 onClick={() => {
 //                   setShowAdditionalInfo(false);
-//                   setAdditionalInfo(localAdditionalInfo);
-//                   localStorage.setItem("additionalInfo", localAdditionalInfo);
+//                   onSaveInfo();
 //                 }}
 //               >
 //                 Save
@@ -244,6 +215,7 @@
 
 // export default DesignSpecifications;
 
+
 "use client";
 
 import React, { useRef, useState } from "react";
@@ -256,7 +228,7 @@ interface DesignSpecificationsProps {
   isEditingInfo: boolean;
   onSaveInfo: () => void;
   onEditInfo: () => void;
-  setIsEditingInfo: (value: boolean) => void; // Add setIsEditingInfo to props
+  setIsEditingInfo: (value: boolean) => void;
 }
 
 const DesignSpecifications: React.FC<DesignSpecificationsProps> = ({
@@ -361,6 +333,9 @@ const DesignSpecifications: React.FC<DesignSpecificationsProps> = ({
           <p className="text-gray-500 text-sm mt-2 text-center">
             Upload a design inspo so we can help you create something good, or just leave a message.
           </p>
+          <p className="text-red-500 text-xs mt-2 italic">
+            *Note: Requesting a custom design may attract an additional fee, communicated after order review.
+          </p>
           {!showCustomDesignOptions ? (
             <button
               className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded-lg"
@@ -414,7 +389,7 @@ const DesignSpecifications: React.FC<DesignSpecificationsProps> = ({
               onClick={() => {
                 setShowAdditionalInfo(false);
                 if (isEditingInfo) {
-                  setIsEditingInfo(false); // Reset editing state if closing without saving
+                  setIsEditingInfo(false);
                 }
               }}
             >
@@ -434,7 +409,7 @@ const DesignSpecifications: React.FC<DesignSpecificationsProps> = ({
                 onClick={() => {
                   setShowAdditionalInfo(false);
                   if (isEditingInfo) {
-                    setIsEditingInfo(false); // Reset editing state if closing without saving
+                    setIsEditingInfo(false);
                   }
                 }}
               >

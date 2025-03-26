@@ -1,5 +1,4 @@
 
-
 // "use client";
 
 // import React from "react";
@@ -24,7 +23,7 @@
 //   };
 
 //   return (
-//     <div className="border border-gray-200 rounded-lg shadow-md w-full max-w-sm mx-auto p-2 h-[400px] flex flex-col justify-between overflow-hidden hover:scale-105 transition-transform duration-200">
+//     <div className="border border-gray-200 rounded-lg shadow-md w-full max-w-xs mx-auto p-2 h-[350px] flex flex-col justify-between overflow-hidden hover:scale-105 transition-transform duration-200">
 //       <Link href={`/products/${id}`}>
 //         <div className="bg-gray-100 rounded-t-lg overflow-hidden">
 //           <div className="p-2 flex justify-center h-[200px]">
@@ -45,19 +44,20 @@
 //           </div>
 //         </div>
 //       </Link>
-//       <div className="bg-white p-4 rounded-b-lg flex flex-col justify-between flex-grow overflow-hidden">
-//         <div className="text-center flex-grow">
-//           <h3 className="mt-4 text-lg font-semibold text-gray-800 truncate">{name}</h3>
-//           <p className="mt-2 text-sm text-gray-600 truncate">
+//       <div className="bg-white rounded-b-lg flex flex-col justify-between">
+//         <div className="text-left p-2">
+//           <h3 className="mt-2 text-lg font-semibold text-gray-800 truncate">{name}</h3>
+//           <p className="mt-1 text-sm text-gray-600 truncate">
 //             {currency}
-//             {parseFloat(price).toLocaleString()} <span className="text-gray-400">{description}</span>
+//             {parseFloat(price).toLocaleString()}{" "}
+//             <span className="text-gray-400">{description}</span>
 //           </p>
 //         </div>
-//         <div className="mt-4 flex justify-center">
+//         <div className="mt-2 flex justify-start p-2">
 //           <Link
 //             href={`/products/${id}`}
 //             onClick={handleOrderNow}
-//             className="px-4 py-2 bg-white text-yellow-500 border border-yellow-500 rounded-lg hover:bg-yellow-600 hover:text-white hover:border-yellow-600 transition-colors block text-center w-[200px] mx-auto"
+//             className="px-4 py-2 bg-white text-yellow-500 border border-yellow-500 rounded-lg hover:bg-yellow-600 hover:text-white hover:border-yellow-600 transition-colors block text-center w-full"
 //           >
 //             Order Now
 //           </Link>
@@ -93,10 +93,10 @@ const ProductCard = ({ product, onOrderNow }: ProductCardProps) => {
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg shadow-md w-full max-w-sm mx-auto p-2 h-[350px] flex flex-col justify-between overflow-hidden hover:scale-105 transition-transform duration-200">
+    <div className="border border-gray-200 rounded-lg shadow-md w-full max-w-[280px] mx-auto p-2 h-[400px] flex flex-col justify-between overflow-hidden hover:scale-105 transition-transform duration-200">
       <Link href={`/products/${id}`}>
         <div className="bg-gray-100 rounded-t-lg overflow-hidden">
-          <div className="p-2 flex justify-center h-[200px]">
+          <div className="p-2 flex justify-center h-[230px]">
             {main_image ? (
               <Image
                 src={main_image.startsWith("/") ? main_image : `/${main_image}`}
@@ -114,8 +114,8 @@ const ProductCard = ({ product, onOrderNow }: ProductCardProps) => {
           </div>
         </div>
       </Link>
-      <div className="bg-white p-4 rounded-b-lg flex flex-col justify-between">
-        <div className="text-left">
+      <div className="bg-white rounded-b-lg flex flex-col justify-between">
+        <div className="text-left p-2">
           <h3 className="mt-2 text-lg font-semibold text-gray-800 truncate">{name}</h3>
           <p className="mt-1 text-sm text-gray-600 truncate">
             {currency}
@@ -123,11 +123,11 @@ const ProductCard = ({ product, onOrderNow }: ProductCardProps) => {
             <span className="text-gray-400">{description}</span>
           </p>
         </div>
-        <div className="mt-2 flex justify-start">
+        <div className="mt-2 flex justify-start p-2">
           <Link
             href={`/products/${id}`}
             onClick={handleOrderNow}
-            className="px-4 py-2 bg-white text-yellow-500 border border-yellow-500 rounded-lg hover:bg-yellow-600 hover:text-white hover:border-yellow-600 transition-colors block text-center w-[200px]"
+            className="px-4 py-2 bg-white text-yellow-500 border border-yellow-500 rounded-lg hover:bg-yellow-600 hover:text-white hover:border-yellow-600 transition-colors block text-center w-full"
           >
             Order Now
           </Link>

@@ -1,3 +1,4 @@
+# api/models.py
 from django.db import models
 from django.conf import settings
 
@@ -27,7 +28,7 @@ class Product(models.Model):
         default=1
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    increment_step = models.IntegerField(default=1)  # New field added
+    increment_step = models.IntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -76,7 +77,16 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, default='pending')
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('processing', 'Processing'),
+            ('completed', 'Completed'),
+            ('cancelled', 'Cancelled'),
+        ],
+        default='pending'
+    )
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     delivery_option = models.CharField(max_length=20, choices=(('pickup', 'Pick Up'), ('delivery', 'Deliver to Address')), default='pickup')
 
@@ -94,3 +104,4 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} of {self.product.name}"
+

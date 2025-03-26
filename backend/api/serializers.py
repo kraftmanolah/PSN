@@ -1,7 +1,7 @@
-
+# api/serializers.py
 from rest_framework import serializers
 from .models import Product, ProductCategory, ProductImage, Cart, CartItem, Order, OrderItem, Delivery
-from decimal import Decimal  # Import Decimal for type conversion
+from decimal import Decimal
 
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,7 +36,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_item_total(self, obj):
         increment_step = max(obj.product.increment_step or 1, 1)
-        units = Decimal(obj.quantity) / Decimal(increment_step)  # Convert to Decimal to avoid float
+        units = Decimal(obj.quantity) / Decimal(increment_step)
         return obj.product.price * units
 
 class CartSerializer(serializers.ModelSerializer):
@@ -81,12 +81,12 @@ class OrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         delivery_data = validated_data.pop('delivery', None)
         items_data = validated_data.pop('items', [])
-        design_file = validated_data.pop('design_file', None)
-
-        order = Order.objects.create(**validated_data, design_file=design_file)
+        order = Order.objects.create(**validated_data)
         if delivery_data:
             Delivery.objects.create(order=order, **delivery_data)
         for item_data in items_data:
             product = item_data.pop('product')
             OrderItem.objects.create(order=order, product=product, **item_data)
         return order
+
+
