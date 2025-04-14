@@ -16,13 +16,13 @@
 //   return (
 //     <footer className="bg-black text-white py-12">
 //       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-//         {/* Column 1: Logo */}
-//         <div className="flex flex-col items-center md:items-start">
+//         {/* Column 1: Logo - Centered Vertically */}
+//         <div className="flex flex-col justify-center items-center md:items-start h-full">
 //           <Image
 //             src="/images/logo.png"
 //             alt="Printshop Naija Logo"
-//             width={120} // Reduced from 150
-//             height={40} // Reduced from 50
+//             width={120}
+//             height={40}
 //             className="object-contain"
 //           />
 //           <p className="text-gray-400 text-sm mt-2">Your Ideas, Perfectly Printed!</p>
@@ -133,10 +133,26 @@ const Footer: React.FC = () => {
         <div>
           <h4 className="text-lg font-semibold mb-3">Support</h4>
           <ul className="space-y-2">
-            <li>Contact Us</li>
-            <li>Privacy Policy</li>
-            <li>Terms of Service</li>
-            <li>FAQs</li>
+            <li>
+              <a href="/contact" className="hover:text-yellow-500 transition">
+                Contact Us
+              </a>
+            </li>
+            <li>
+              <a href="/privacy-policy" className="hover:text-yellow-500 transition">
+                Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a href="/terms-of-service" className="hover:text-yellow-500 transition">
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <a href="/faqs" className="hover:text-yellow-500 transition">
+                FAQs
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -144,9 +160,16 @@ const Footer: React.FC = () => {
         <div>
           <h4 className="text-lg font-semibold mb-3">Account</h4>
           <ul className="space-y-2">
-            <li>Login/Sign Up</li>
-            <li>My Cart</li>
-            <li>View Quotes</li>
+            <li>
+              <a href="/signin" className="hover:text-yellow-500 transition">
+                Login/Sign Up
+              </a>
+            </li>
+            <li>
+              <a href="/cart" className="hover:text-yellow-500 transition">
+                My Cart
+              </a>
+            </li>
           </ul>
         </div>
 

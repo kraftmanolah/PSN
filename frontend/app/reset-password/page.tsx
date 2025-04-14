@@ -57,7 +57,7 @@ export default function ResetPassword() {
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row">
-            <div className="w-full md:w-1/2 h-48 md:h-auto bg-cover bg-center" style={{ backgroundImage: 'url("/images/hero-2.png")' }} />
+            <div className="w-full md:w-1/2 h-48 md:h-auto bg-cover bg-center" style={{ backgroundImage: 'url("/images/reset.png")' }} />
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-8 bg-white relative">
                 <div className="mb-6">
                     <h1 className="text-3xl font-semibold text-gray-800">Create a New Password</h1>

@@ -426,8 +426,8 @@ const Navbar: React.FC = () => {
         <Link href="/about" className={getLinkClass("/about")}>
           About Us
         </Link>
-        <Link href="/help" className={getLinkClass("/help")}>
-          Help
+        <Link href="/contact" className={getLinkClass("/help")}>
+          Contact Us
         </Link>
       </div>
 
