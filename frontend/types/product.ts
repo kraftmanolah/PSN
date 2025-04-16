@@ -73,4 +73,7 @@ export interface OrderItem {
   product: Product;
   quantity: number;
   price: number;
+  design_file?: string | null;
+  additional_info?: string | null;
+  color?: string | null;
 }

@@ -1,4 +1,3 @@
-
 // "use client";
 
 // import React, { useState, useEffect, useRef } from "react";
@@ -8,7 +7,7 @@
 // import useSWR from "swr";
 // import Link from "next/link";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faShoppingCart, faCaretDown, faBars, faSearch } from "@fortawesome/free-solid-svg-icons";
+// import { faCaretDown, faBars, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 // const fetcher = (url: string, token: string | null) =>
 //   fetch(url, {
@@ -26,8 +25,9 @@
 //   const [searchQuery, setSearchQuery] = useState("");
 //   const { token, user, logout } = useAuth();
 //   const router = useRouter();
+//   const currentPathname = usePathname();
 //   const { data: cart, error: cartError } = useSWR(
-//     token ? ["http://localhost:8000/api/cart/", token] : null,
+//     token ? [`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart/`, token] : null,
 //     ([url, authToken]) => fetcher(url, authToken)
 //   );
 
@@ -78,7 +78,7 @@
 //   };
 
 //   const getLinkClass = (path: string) => {
-//     const isActive = pathname === path;
+//     const isActive = currentPathname === path;
 //     return isActive
 //       ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1"
 //       : "text-gray-300 hover:text-yellow-400";
@@ -110,8 +110,8 @@
 //         <Link href="/about" className={getLinkClass("/about")}>
 //           About Us
 //         </Link>
-//         <Link href="/help" className={getLinkClass("/help")}>
-//           Help
+//         <Link href="/contact" className={getLinkClass("/help")}>
+//           Contact Us
 //         </Link>
 //       </div>
 
@@ -172,13 +172,15 @@
 //                 )}
 //               </div>
 //               <Link href="/cart" className="relative">
-//                 <FontAwesomeIcon
-//                   icon={faShoppingCart}
+//                 <Image
+//                   src="/icons/shopping-cart.png"
+//                   alt="Cart"
+//                   width={24}
+//                   height={24}
 //                   className="text-yellow-500"
-//                   size="lg"
 //                 />
 //                 {cartCount > 0 && (
-//                   <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+//                   <span className="absolute -top-2 -right-2 bg-yellow-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs">
 //                     {cartCount}
 //                   </span>
 //                 )}
@@ -280,13 +282,15 @@
 //                 )}
 //               </div>
 //               <Link href="/cart" className="relative" onClick={() => setMobileMenuOpen(false)}>
-//                 <FontAwesomeIcon
-//                   icon={faShoppingCart}
+//                 <Image
+//                   src="/icons/shopping-cart.png"
+//                   alt="Cart"
+//                   width={24}
+//                   height={24}
 //                   className="text-yellow-500"
-//                   size="lg"
 //                 />
 //                 {cartCount > 0 && (
-//                   <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+//                   <span className="absolute -top-2 -right-2 bg-yellow-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs">
 //                     {cartCount}
 //                   </span>
 //                 )}
@@ -318,12 +322,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation"; // Import usePathname
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import useSWR from "swr";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart, faCaretDown, faBars, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown, faBars, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 const fetcher = (url: string, token: string | null) =>
   fetch(url, {
@@ -341,7 +345,7 @@ const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { token, user, logout } = useAuth();
   const router = useRouter();
-  const currentPathname = usePathname(); // Assign usePathname() to a variable
+  const currentPathname = usePathname();
   const { data: cart, error: cartError } = useSWR(
     token ? [`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart/`, token] : null,
     ([url, authToken]) => fetcher(url, authToken)
@@ -394,7 +398,7 @@ const Navbar: React.FC = () => {
   };
 
   const getLinkClass = (path: string) => {
-    const isActive = currentPathname === path; // Use the assigned variable
+    const isActive = currentPathname === path;
     return isActive
       ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1"
       : "text-gray-300 hover:text-yellow-400";
@@ -459,6 +463,13 @@ const Navbar: React.FC = () => {
             <>
               <div className="relative" ref={userMenuRef}>
                 <button onClick={toggleUserMenu} className="flex items-center text-gray-300 hover:text-yellow-400">
+                  <Image
+                    src="/icons/user.png"
+                    alt="User"
+                    width={24}
+                    height={24}
+                    className="mr-1"
+                  />
                   <span>Hi, {getDisplayName()}!</span>
                   <FontAwesomeIcon
                     icon={faCaretDown}
@@ -488,13 +499,15 @@ const Navbar: React.FC = () => {
                 )}
               </div>
               <Link href="/cart" className="relative">
-                <FontAwesomeIcon
-                  icon={faShoppingCart}
+                <Image
+                  src="/icons/shopping-cart.png"
+                  alt="Cart"
+                  width={24}
+                  height={24}
                   className="text-yellow-500"
-                  size="lg"
                 />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <span className="absolute -top-2 -right-2 bg-yellow-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {cartCount}
                   </span>
                 )}
@@ -563,6 +576,13 @@ const Navbar: React.FC = () => {
             <>
               <div className="relative" ref={userMenuRef}>
                 <button onClick={toggleUserMenu} className="flex items-center text-gray-300 hover:text-yellow-400">
+                  <Image
+                    src="/icons/user.png"
+                    alt="User"
+                    width={24}
+                    height={24}
+                    className="mr-1"
+                  />
                   <span>Hi, {getDisplayName()}!</span>
                   <FontAwesomeIcon
                     icon={faCaretDown}
@@ -596,13 +616,15 @@ const Navbar: React.FC = () => {
                 )}
               </div>
               <Link href="/cart" className="relative" onClick={() => setMobileMenuOpen(false)}>
-                <FontAwesomeIcon
-                  icon={faShoppingCart}
+                <Image
+                  src="/icons/shopping-cart.png"
+                  alt="Cart"
+                  width={24}
+                  height={24}
                   className="text-yellow-500"
-                  size="lg"
                 />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <span className="absolute -top-2 -right-2 bg-yellow-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {cartCount}
                   </span>
                 )}

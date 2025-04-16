@@ -1,9 +1,10 @@
 
+
 // "use client";
 
 // import { useState, useEffect, FormEvent } from "react";
 // import { useRouter, useSearchParams } from "next/navigation";
-// import { CartItem } from "@/types/product";
+// import { CartItem, OrderItem } from "@/types/product";
 // import Link from "next/link";
 // import Image from "next/image";
 // import axios from "axios";
@@ -26,7 +27,16 @@
 //   const orderIdFromQuery = searchParams.get("orderId");
 //   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 //   const [orderId, setOrderId] = useState<number | null>(orderIdFromQuery ? parseInt(orderIdFromQuery) : null);
-//   const [scriptLoaded, setScriptLoaded] = useState(false); // Track script loading
+//   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+//   const [orderDeliveryOption, setOrderDeliveryOption] = useState<"pickup" | "delivery" | null>(null);
+//   const [orderDeliveryDetails, setOrderDeliveryDetails] = useState<{
+//     address?: string;
+//     city?: string;
+//     state?: string;
+//     postcode?: string | null;
+//   } | null>(null);
+//   const [orderTotal, setOrderTotal] = useState<number>(0);
+//   const [scriptLoaded, setScriptLoaded] = useState(false);
 
 //   useEffect(() => {
 //     if (loading) return;
@@ -34,13 +44,30 @@
 //       setErrorMsg("Please log in to confirm your order.");
 //       router.push("/signin");
 //     }
-//     if (!deliveryOption) {
-//       setErrorMsg("No delivery option specified. Please return to the cart page.");
-//     }
-//     if (deliveryOption === "delivery" && (!deliveryDetails?.address || !deliveryDetails?.city || !deliveryDetails?.state)) {
-//       setErrorMsg("Delivery details are incomplete. Please return to the cart page to fill them out.");
-//     }
-//   }, [token, loading, deliveryOption, deliveryDetails, router]);
+
+//     const fetchPendingOrder = async () => {
+//       if (orderIdFromQuery && token) {
+//         try {
+//           const response = await axios.get(`${backendUrl}/api/orders/${orderIdFromQuery}/`, {
+//             headers: { Authorization: `Token ${token}` },
+//           });
+//           if (response.status === 200) {
+//             const orderData = response.data;
+//             setOrderItems(orderData.items);
+//             setOrderDeliveryOption(orderData.delivery_option);
+//             setOrderDeliveryDetails(orderData.delivery || null);
+//             setOrderTotal(orderData.total_amount);
+//             setOrderId(orderData.id);
+//           }
+//         } catch (err) {
+//           setErrorMsg("Failed to fetch order details.");
+//           console.error(err);
+//         }
+//       }
+//     };
+
+//     fetchPendingOrder();
+//   }, [token, loading, orderIdFromQuery, router]);
 
 //   const handleCreateOrder = async () => {
 //     if (!cartItems.length || !token) {
@@ -79,14 +106,13 @@
 //   const handleProceedToPayment = async (e: FormEvent<HTMLFormElement>) => {
 //     e.preventDefault();
 
-//     // Load Paystack script dynamically if not already loaded
 //     if (!scriptLoaded) {
 //       const script = document.createElement("script");
 //       script.src = "https://js.paystack.co/v1/inline.js";
 //       script.async = true;
 //       script.onload = () => setScriptLoaded(true);
 //       script.onerror = () => setErrorMsg("Failed to load Paystack script. Please try again.");
-//       e.currentTarget.appendChild(script); // Append script to the form
+//       e.currentTarget.appendChild(script);
 //     }
 
 //     const id = orderId || (await handleCreateOrder());
@@ -105,28 +131,32 @@
 //         return;
 //       }
 
+//       const verifyPayment = async (reference: string) => {
+//         try {
+//           const verifyResponse = await axios.post(
+//             `${backendUrl}/api/orders/${id}/verify_payment/`,
+//             { reference },
+//             { headers: { Authorization: `Token ${token}` } }
+//           );
+//           if (verifyResponse.data.status === "Payment verified") {
+//             localStorage.removeItem("deliveryDetails");
+//             router.push("/profile");
+//           } else {
+//             setErrorMsg("Payment verification failed.");
+//           }
+//         } catch (err) {
+//           setErrorMsg("Error verifying payment.");
+//         }
+//       };
+
 //       const handler = window.PaystackPop.setup({
 //         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here",
 //         email: user?.email || localStorage.getItem("email") || "user@example.com",
-//         amount: cartTotal * 100,
+//         amount: ((orderTotal > 0 ? orderTotal : cartTotal) * 100).toString(),
 //         currency: "NGN",
 //         ref: reference,
-//         callback: async (response: any) => {
-//           try {
-//             const verifyResponse = await axios.post(
-//               `${backendUrl}/api/orders/${id}/verify_payment/`,
-//               { reference: response.reference },
-//               { headers: { Authorization: `Token ${token}` } }
-//             );
-//             if (verifyResponse.data.status === "Payment verified") {
-//               localStorage.removeItem("deliveryDetails");
-//               router.push("/profile");
-//             } else {
-//               setErrorMsg("Payment verification failed.");
-//             }
-//           } catch (err) {
-//             setErrorMsg("Error verifying payment.");
-//           }
+//         callback: (response: any) => {
+//           verifyPayment(response.reference);
 //         },
 //         onClose: () => {
 //           setErrorMsg("Payment window closed. Please try again.");
@@ -140,16 +170,16 @@
 //   };
 
 //   const calculatedSubtotal = cartItems.reduce((sum: number, item: CartItem) => {
-//     const itemTotal = typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total;
-//     return sum + (itemTotal || 0);
+//     const itemTotal = typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total || 0;
+//     return sum + (itemTotal * item.quantity);
 //   }, 0) || 0;
 
-//   const subtotal = calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal;
+//   const subtotal = orderItems.length > 0 && orderTotal > 0 ? orderTotal : (calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal);
 //   const total = subtotal;
 
 //   if (loading) return <div className="p-4">Loading...</div>;
 //   if (errorMsg) return <div className="p-4 text-red-500">{errorMsg}</div>;
-//   if (!deliveryOption) return <div className="p-4">Loading...</div>;
+//   if (!deliveryOption && !orderIdFromQuery) return <div className="p-4">Loading...</div>;
 
 //   return (
 //     <div className="min-h-screen bg-gray-50">
@@ -162,16 +192,19 @@
 //           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
 //             <h2 className="text-lg sm:text-xl font-bold mb-2">Order Details</h2>
 //             <ul>
-//               {cartItems.map((item: CartItem) => {
-//                 const itemTotal = typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total;
-//                 const quantity = typeof item.quantity === "number" ? item.quantity : 1;
+//               {(orderItems.length > 0 ? orderItems : cartItems).map((item: OrderItem | CartItem) => {
+//                 const itemTotal = 'item_total' in item ? (typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total || 0) : parseFloat(item.price) * item.quantity;
+//                 const quantity = item.quantity;
+//                 const designFile = 'design_file' in item ? item.design_file : undefined;
+//                 const additionalInfo = 'additional_info' in item ? item.additional_info : undefined;
+//                 const color = 'color' in item ? item.color : undefined;
 
 //                 return (
-//                   <li key={item.id} className="mb-4 border-b pb-2">
+//                   <li key={item.id.toString()} className="mb-4 border-b pb-2">
 //                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
 //                       <div className="flex-1">
 //                         <p>
-//                           <strong>Item:</strong> {item.product.name} {item.color && `(${item.color})`}
+//                           <strong>Item:</strong> {item.product.name} {color && `(${color})`}
 //                         </p>
 //                         <p>
 //                           <strong>Quantity:</strong> {quantity}
@@ -180,16 +213,16 @@
 //                           <strong>Price:</strong> ₦{itemTotal.toLocaleString()}
 //                         </p>
 //                       </div>
-//                       {item.design_file && (
+//                       {designFile && (
 //                         <div className="mt-2 sm:mt-0">
 //                           <strong>Design File:</strong>
-//                           {item.design_file.endsWith(".pdf") ? (
-//                             <a href={item.design_file} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline ml-2">
+//                           {designFile.endsWith(".pdf") ? (
+//                             <a href={designFile} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline ml-2">
 //                               View PDF
 //                             </a>
 //                           ) : (
 //                             <Image
-//                               src={item.design_file}
+//                               src={designFile}
 //                               alt={`${item.product.name} design`}
 //                               width={100}
 //                               height={100}
@@ -200,9 +233,9 @@
 //                         </div>
 //                       )}
 //                     </div>
-//                     {item.additional_info && (
+//                     {additionalInfo && (
 //                       <div className="mt-2 text-sm text-gray-600">
-//                         <strong>Additional Info:</strong> {item.additional_info}
+//                         <strong>Additional Info:</strong> {additionalInfo}
 //                       </div>
 //                     )}
 //                   </li>
@@ -212,13 +245,13 @@
 //           </div>
 //           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
 //             <h2 className="text-lg sm:text-xl font-bold mb-2">Preferred Delivery Option</h2>
-//             <p>{deliveryOption === "pickup" ? "Pick Up" : "Deliver to Address"}</p>
-//             {deliveryOption === "delivery" && deliveryDetails && (
+//             <p>{orderDeliveryOption || deliveryOption === "pickup" ? "Pick Up" : "Deliver to Address"}</p>
+//             {(orderDeliveryOption === "delivery" || (deliveryOption === "delivery" && deliveryDetails)) && (
 //               <div className="mt-4">
 //                 <h2 className="text-base sm:text-lg font-bold mb-2">Delivery Address</h2>
-//                 <p>{deliveryDetails.address}</p>
-//                 <p>{deliveryDetails.city}, {deliveryDetails.state}</p>
-//                 {deliveryDetails.postcode && <p>Postcode: {deliveryDetails.postcode}</p>}
+//                 <p>{(orderDeliveryDetails?.address || deliveryDetails?.address) || ""}</p>
+//                 <p>{(orderDeliveryDetails?.city || deliveryDetails?.city) || ""}, {(orderDeliveryDetails?.state || deliveryDetails?.state) || ""}</p>
+//                 {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) && <p>Postcode: {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) || ""}</p>}
 //                 <p className="text-red-500 text-sm mt-2">
 //                   Note: Delivery price varies nationwide and will be communicated to you after your order.
 //                 </p>
@@ -260,7 +293,7 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CartItem } from "@/types/product";
+import { CartItem, OrderItem } from "@/types/product";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
@@ -283,6 +316,15 @@ export default function OrderSummaryPage() {
   const orderIdFromQuery = searchParams.get("orderId");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(orderIdFromQuery ? parseInt(orderIdFromQuery) : null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [orderDeliveryOption, setOrderDeliveryOption] = useState<"pickup" | "delivery" | null>(null);
+  const [orderDeliveryDetails, setOrderDeliveryDetails] = useState<{
+    address?: string;
+    city?: string;
+    state?: string;
+    postcode?: string | null;
+  } | null>(null);
+  const [orderTotal, setOrderTotal] = useState<number>(0);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
@@ -291,13 +333,30 @@ export default function OrderSummaryPage() {
       setErrorMsg("Please log in to confirm your order.");
       router.push("/signin");
     }
-    if (!deliveryOption) {
-      setErrorMsg("No delivery option specified. Please return to the cart page.");
-    }
-    if (deliveryOption === "delivery" && (!deliveryDetails?.address || !deliveryDetails?.city || !deliveryDetails?.state)) {
-      setErrorMsg("Delivery details are incomplete. Please return to the cart page to fill them out.");
-    }
-  }, [token, loading, deliveryOption, deliveryDetails, router]);
+
+    const fetchPendingOrder = async () => {
+      if (orderIdFromQuery && token) {
+        try {
+          const response = await axios.get(`${backendUrl}/api/orders/${orderIdFromQuery}/`, {
+            headers: { Authorization: `Token ${token}` },
+          });
+          if (response.status === 200) {
+            const orderData = response.data;
+            setOrderItems(orderData.items);
+            setOrderDeliveryOption(orderData.delivery_option);
+            setOrderDeliveryDetails(orderData.delivery || null);
+            setOrderTotal(orderData.total_amount);
+            setOrderId(orderData.id);
+          }
+        } catch (err) {
+          setErrorMsg("Failed to fetch order details.");
+          console.error(err);
+        }
+      }
+    };
+
+    fetchPendingOrder();
+  }, [token, loading, orderIdFromQuery, router]);
 
   const handleCreateOrder = async () => {
     if (!cartItems.length || !token) {
@@ -336,7 +395,6 @@ export default function OrderSummaryPage() {
   const handleProceedToPayment = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Load Paystack script dynamically if not already loaded
     if (!scriptLoaded) {
       const script = document.createElement("script");
       script.src = "https://js.paystack.co/v1/inline.js";
@@ -357,13 +415,11 @@ export default function OrderSummaryPage() {
       );
       const { authorization_url, reference } = response.data.data;
 
-      // Wait for the script to load if not already loaded
       if (!window.PaystackPop) {
         setErrorMsg("Paystack script not loaded yet. Please try again.");
         return;
       }
 
-      // Define the verification logic outside the callback
       const verifyPayment = async (reference: string) => {
         try {
           const verifyResponse = await axios.post(
@@ -385,11 +441,10 @@ export default function OrderSummaryPage() {
       const handler = window.PaystackPop.setup({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here",
         email: user?.email || localStorage.getItem("email") || "user@example.com",
-        amount: cartTotal * 100,
+        amount: ((orderTotal > 0 ? orderTotal : cartTotal) * 100).toString() as string,
         currency: "NGN",
         ref: reference,
         callback: (response: any) => {
-          // Call the async function outside the callback
           verifyPayment(response.reference);
         },
         onClose: () => {
@@ -404,16 +459,16 @@ export default function OrderSummaryPage() {
   };
 
   const calculatedSubtotal = cartItems.reduce((sum: number, item: CartItem) => {
-    const itemTotal = typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total;
-    return sum + (itemTotal || 0);
+    const itemTotal = typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total || 0;
+    return sum + (itemTotal * item.quantity);
   }, 0) || 0;
 
-  const subtotal = calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal;
+  const subtotal = orderItems.length > 0 && orderTotal > 0 ? orderTotal : (calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal);
   const total = subtotal;
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (errorMsg) return <div className="p-4 text-red-500">{errorMsg}</div>;
-  if (!deliveryOption) return <div className="p-4">Loading...</div>;
+  if (!deliveryOption && !orderIdFromQuery) return <div className="p-4">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -426,16 +481,19 @@ export default function OrderSummaryPage() {
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
             <h2 className="text-lg sm:text-xl font-bold mb-2">Order Details</h2>
             <ul>
-              {cartItems.map((item: CartItem) => {
-                const itemTotal = typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total;
-                const quantity = typeof item.quantity === "number" ? item.quantity : 1;
+              {(orderItems.length > 0 ? orderItems : cartItems).map((item: OrderItem | CartItem) => {
+                const itemTotal = 'item_total' in item ? (typeof item.item_total === "string" ? parseFloat(item.item_total) : item.item_total || 0) : parseFloat(item.price) * item.quantity;
+                const quantity = item.quantity;
+                const designFile = 'design_file' in item ? item.design_file : undefined;
+                const additionalInfo = 'additional_info' in item ? item.additional_info : undefined;
+                const color = 'color' in item ? item.color : undefined;
 
                 return (
-                  <li key={item.id} className="mb-4 border-b pb-2">
+                  <li key={item.id.toString()} className="mb-4 border-b pb-2">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div className="flex-1">
                         <p>
-                          <strong>Item:</strong> {item.product.name} {item.color && `(${item.color})`}
+                          <strong>Item:</strong> {item.product.name} {color && `(${color})`}
                         </p>
                         <p>
                           <strong>Quantity:</strong> {quantity}
@@ -444,16 +502,16 @@ export default function OrderSummaryPage() {
                           <strong>Price:</strong> ₦{itemTotal.toLocaleString()}
                         </p>
                       </div>
-                      {item.design_file && (
+                      {designFile && (
                         <div className="mt-2 sm:mt-0">
                           <strong>Design File:</strong>
-                          {item.design_file.endsWith(".pdf") ? (
-                            <a href={item.design_file} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline ml-2">
+                          {designFile.endsWith(".pdf") ? (
+                            <a href={designFile} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline ml-2">
                               View PDF
                             </a>
                           ) : (
                             <Image
-                              src={item.design_file}
+                              src={designFile}
                               alt={`${item.product.name} design`}
                               width={100}
                               height={100}
@@ -464,9 +522,9 @@ export default function OrderSummaryPage() {
                         </div>
                       )}
                     </div>
-                    {item.additional_info && (
+                    {additionalInfo && (
                       <div className="mt-2 text-sm text-gray-600">
-                        <strong>Additional Info:</strong> {item.additional_info}
+                        <strong>Additional Info:</strong> {additionalInfo}
                       </div>
                     )}
                   </li>
@@ -476,13 +534,13 @@ export default function OrderSummaryPage() {
           </div>
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
             <h2 className="text-lg sm:text-xl font-bold mb-2">Preferred Delivery Option</h2>
-            <p>{deliveryOption === "pickup" ? "Pick Up" : "Deliver to Address"}</p>
-            {deliveryOption === "delivery" && deliveryDetails && (
+            <p>{orderDeliveryOption || deliveryOption === "pickup" ? "Pick Up" : "Deliver to Address"}</p>
+            {(orderDeliveryOption === "delivery" || (deliveryOption === "delivery" && deliveryDetails)) && (
               <div className="mt-4">
                 <h2 className="text-base sm:text-lg font-bold mb-2">Delivery Address</h2>
-                <p>{deliveryDetails.address}</p>
-                <p>{deliveryDetails.city}, {deliveryDetails.state}</p>
-                {deliveryDetails.postcode && <p>Postcode: {deliveryDetails.postcode}</p>}
+                <p>{(orderDeliveryDetails?.address || deliveryDetails?.address) || ""}</p>
+                <p>{(orderDeliveryDetails?.city || deliveryDetails?.city) || ""}, {(orderDeliveryDetails?.state || deliveryDetails?.state) || ""}</p>
+                {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) && <p>Postcode: {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) || ""}</p>}
                 <p className="text-red-500 text-sm mt-2">
                   Note: Delivery price varies nationwide and will be communicated to you after your order.
                 </p>
