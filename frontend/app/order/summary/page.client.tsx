@@ -9,6 +9,69 @@
 // import Breadcrumbs from "@/app/components/Breadcrumbs";
 // import { useAuth } from "@/app/hooks/useAuth";
 
+// // Skeleton Loader Component
+// const OrderSummarySkeleton = () => (
+//   <div className="min-h-screen bg-gray-50">
+//     <div className="mx-4 sm:mx-6 lg:mx-12 xl:mx-16 py-6 sm:py-8 animate-pulse">
+//       <div className="mx-0">
+//         <Breadcrumbs />
+//       </div>
+//       <div className="w-full">
+//         <div className="h-8 w-1/3 bg-gray-300 rounded mb-4"></div>
+//         {/* Order Details Section */}
+//         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
+//           <div className="h-6 w-1/4 bg-gray-300 rounded mb-2"></div>
+//           <ul className="space-y-4">
+//             {Array(2).fill(0).map((_, index) => (
+//               <li key={index} className="border-b pb-2">
+//                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+//                   <div className="flex-1 space-y-2">
+//                     <div className="h-4 w-3/4 bg-gray-300 rounded"></div>
+//                     <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
+//                     <div className="h-4 w-1/3 bg-gray-300 rounded"></div>
+//                   </div>
+//                   <div className="w-24 h-24 bg-gray-300 rounded mt-2 sm:mt-0"></div>
+//                 </div>
+//               </li>
+//             ))}
+//           </ul>
+//         </div>
+//         {/* Delivery Option Section */}
+//         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
+//           <div className="h-6 w-1/4 bg-gray-300 rounded mb-2"></div>
+//           <div className="h-4 w-1/3 bg-gray-300 rounded mb-2"></div>
+//           <div className="space-y-2 mt-4">
+//             <div className="h-4 w-1/2 bg-gray-300 rounded"></div>
+//             <div className="h-4 w-1/2 bg-gray-300 rounded"></div>
+//             <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
+//           </div>
+//         </div>
+//         {/* Total Section */}
+//         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
+//           <div className="flex justify-between mb-2">
+//             <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
+//             <div className="h-4 w-1/6 bg-gray-300 rounded"></div>
+//           </div>
+//           <div className="flex justify-between mb-2">
+//             <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
+//             <div className="h-4 w-1/6 bg-gray-300 rounded"></div>
+//           </div>
+//           <div className="flex justify-between">
+//             <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
+//             <div className="h-4 w-1/6 bg-gray-300 rounded"></div>
+//           </div>
+//           <div className="mt-4 flex items-center space-x-2">
+//             <div className="w-4 h-4 bg-gray-300 rounded"></div>
+//             <div className="h-4 w-1/2 bg-gray-300 rounded"></div>
+//           </div>
+//           <div className="h-12 w-[380px] bg-gray-300 rounded mt-4 mx-auto"></div>
+//         </div>
+//         <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
+//       </div>
+//     </div>
+//   </div>
+// );
+
 // export default function OrderSummaryPage() {
 //   const { token, user, loading } = useAuth();
 //   const searchParams = useSearchParams();
@@ -185,9 +248,9 @@
 //   const subtotal = orderItems.length > 0 ? orderItemsSubtotal : (calculatedSubtotal > 0 && !isNaN(calculatedSubtotal) ? calculatedSubtotal : cartTotal);
 //   const total = subtotal;
 
-//   if (loading) return <div className="p-4">Loading...</div>;
+//   if (loading) return <OrderSummarySkeleton />;
 //   if (errorMsg) return <div className="p-4 text-red-500">{errorMsg}</div>;
-//   if (!deliveryOption && !orderIdFromQuery) return <div className="p-4">Loading...</div>;
+//   if (!deliveryOption && !orderIdFromQuery) return <OrderSummarySkeleton />;
 
 //   return (
 //     <div className="min-h-screen bg-gray-50">
@@ -298,7 +361,7 @@
 //               <button
 //                 type="submit"
 //                 disabled={!termsAccepted}
-//                 className="w-[380px] h-[48px] mt-4 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed mx-auto block"
+//                 className="w-full sm:w-[380px] h-[48px] mt-4 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed mx-auto block"
 //               >
 //                 Proceed to Payment
 //               </button>
@@ -323,6 +386,22 @@ import Image from "next/image";
 import axios from "axios";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { useAuth } from "@/app/hooks/useAuth";
+import useSWR from "swr";
+
+// Interface for user data (aligned with backend UserSerializer)
+interface UserData {
+  user_type: "individual" | "organization";
+  company_address: string;
+}
+
+// Fetcher function for SWR
+const fetcher = ([url, token]: [string, string | null]): Promise<any> =>
+  fetch(url, {
+    headers: token ? { Authorization: `Token ${token}` } : {},
+  }).then((res) => {
+    if (!res.ok) throw new Error(`Fetch failed with status: ${res.status}`);
+    return res.json();
+  });
 
 // Skeleton Loader Component
 const OrderSummarySkeleton = () => (
@@ -415,6 +494,12 @@ export default function OrderSummaryPage() {
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  // Fetch user data to check user_type and company_address
+  const { data: userData, error: userError } = useSWR<UserData, Error>(
+    token ? [`${backendUrl}/api/accounts/user/`, token] : null,
+    fetcher
+  );
+
   useEffect(() => {
     if (loading) return;
     if (!token) {
@@ -451,18 +536,37 @@ export default function OrderSummaryPage() {
       setErrorMsg(!cartItems.length ? "Your cart is empty." : "Please log in to proceed to payment.");
       return null;
     }
-    if (deliveryOption === "delivery" && (!deliveryDetails?.address || !deliveryDetails?.city || !deliveryDetails?.state)) {
-      setErrorMsg("Delivery details are incomplete. Please return to the cart page.");
-      return null;
+
+    // Validate delivery details based on user_type
+    if (deliveryOption === "delivery") {
+      if (userData?.user_type === "individual") {
+        if (!deliveryDetails?.address || !deliveryDetails?.city || !deliveryDetails?.state) {
+          setErrorMsg("Delivery details are incomplete. Please return to the cart page.");
+          return null;
+        }
+      } else if (userData?.user_type === "organization") {
+        if (!userData.company_address) {
+          setErrorMsg("Company address is missing. Please update it in your profile.");
+          return null;
+        }
+      }
     }
 
     const formData = new FormData();
     formData.append("delivery_option", deliveryOption || "pickup");
-    if (deliveryOption === "delivery" && deliveryDetails) {
-      formData.append("delivery_address", deliveryDetails.address);
-      formData.append("delivery_city", deliveryDetails.city);
-      formData.append("delivery_state", deliveryDetails.state);
-      formData.append("delivery_postcode", deliveryDetails.postcode || "");
+    if (deliveryOption === "delivery") {
+      if (userData?.user_type === "individual" && deliveryDetails) {
+        formData.append("delivery_address", deliveryDetails.address);
+        formData.append("delivery_city", deliveryDetails.city);
+        formData.append("delivery_state", deliveryDetails.state);
+        formData.append("delivery_postcode", deliveryDetails.postcode || "");
+      } else if (userData?.user_type === "organization") {
+        // Use company_address as delivery_address, set defaults for other fields
+        formData.append("delivery_address", userData.company_address);
+        formData.append("delivery_city", ""); // Backend allows empty
+        formData.append("delivery_state", ""); // Backend allows empty
+        formData.append("delivery_postcode", "");
+      }
     }
 
     try {
@@ -632,12 +736,18 @@ export default function OrderSummaryPage() {
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
             <h2 className="text-lg sm:text-xl font-bold mb-2">Preferred Delivery Option</h2>
             <p>{orderDeliveryOption || deliveryOption === "pickup" ? "Pick Up" : "Deliver to Address"}</p>
-            {(orderDeliveryOption === "delivery" || (deliveryOption === "delivery" && deliveryDetails)) && (
+            {(orderDeliveryOption === "delivery" || (deliveryOption === "delivery" && (deliveryDetails || userData?.company_address))) && (
               <div className="mt-4">
                 <h2 className="text-base sm:text-lg font-bold mb-2">Delivery Address</h2>
-                <p>{(orderDeliveryDetails?.address || deliveryDetails?.address) || ""}</p>
-                <p>{(orderDeliveryDetails?.city || deliveryDetails?.city) || ""}, {(orderDeliveryDetails?.state || deliveryDetails?.state) || ""}</p>
-                {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) && <p>Postcode: {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) || ""}</p>}
+                {userData?.user_type === "individual" ? (
+                  <>
+                    <p>{(orderDeliveryDetails?.address || deliveryDetails?.address) || ""}</p>
+                    <p>{(orderDeliveryDetails?.city || deliveryDetails?.city) || ""}, {(orderDeliveryDetails?.state || deliveryDetails?.state) || ""}</p>
+                    {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) && <p>Postcode: {(orderDeliveryDetails?.postcode || deliveryDetails?.postcode) || ""}</p>}
+                  </>
+                ) : (
+                  <p>{userData?.company_address || ""}</p>
+                )}
                 <p className="text-red-500 text-sm mt-2">
                   Note: Delivery price varies nationwide and will be communicated to you after your order.
                 </p>

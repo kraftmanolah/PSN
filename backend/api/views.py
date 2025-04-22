@@ -1,11 +1,13 @@
-
-
-# #rest_framework.response import Response
+# from rest_framework import viewsets, permissions, status
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
 # from rest_framework.decorators import action
 # from .models import Product, ProductCategory, Cart, CartItem, Order, OrderItem, Delivery
 # from .serializers import ProductSerializer, ProductCategorySerializer, CartSerializer, CartItemSerializer, OrderSerializer
 # from django.db.models import Q
 # from django.conf import settings
+# from django.core.mail import send_mail
+# from django.template.loader import render_to_string
 # import requests
 # from decimal import Decimal
 
@@ -17,10 +19,7 @@
 
 # class ProductCategoryViewSet(viewsets.ModelViewSet):
 #     queryset = ProductCategory.objects.all()
-#     serializer_class api/views.py
-# from rest_framework import viewsets, permissions, status
-# from rest_framework.views import APIView
-# from  = ProductCategorySerializer
+#     serializer_class = ProductCategorySerializer
 #     permission_classes = [permissions.AllowAny]
 
 # class ProductViewSet(viewsets.ModelViewSet):
@@ -113,7 +112,7 @@
 #             cart_item.save()
 #             return Response({'status': 'quantity updated'})
 #         except CartItem.DoesNotExist:
-#             return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+#             return Response({'error': 'Cart item not found'}, status=status.HTTP_400_BAD_REQUEST)
 
 #     @action(detail=True, methods=['delete'], url_path=r'items/(?P<item_id>\d+)')
 #     def remove_item(self, request, pk=None, item_id=None):
@@ -197,6 +196,7 @@
 #                 additional_info=item.additional_info,
 #                 color=item.color
 #             )
+
 #         cart.items.all().delete()
 #         serializer = OrderSerializer(order)
 #         return Response({'id': order.id, **serializer.data}, status=status.HTTP_201_CREATED)
@@ -213,7 +213,7 @@
 #         }
 #         data = {
 #             'email': request.user.email,
-#             'amount': int(order.total_amount * 100),  # Convert to kobo
+#             'amount': int(order.total_amount * 100),
 #             'currency': 'NGN',
 #             'callback_url': f'{settings.FRONTEND_URL}/order/summary?orderId={order.id}',
 #         }
@@ -239,6 +239,39 @@
 #                 order.status = 'processing'
 #                 order.transaction_id = reference
 #                 order.save()
+
+#                 # Send emails to user and staff
+#                 email_context = {
+#                     'user': self.request.user,
+#                     'order': order,
+#                     'frontend_url': settings.FRONTEND_URL,
+#                     'default_from_email': settings.DEFAULT_FROM_EMAIL,
+#                 }
+
+#                 # User email
+#                 user_html_message = render_to_string('emails/order_confirmation_user.html', email_context)
+#                 user_plain_message = render_to_string('emails/order_confirmation_user.txt', email_context)
+#                 send_mail(
+#                     subject='Order Confirmation - PrintShop Naija',
+#                     message=user_plain_message,
+#                     from_email=settings.DEFAULT_FROM_EMAIL,
+#                     recipient_list=[self.request.user.email],
+#                     html_message=user_html_message,
+#                     fail_silently=True,
+#                 )
+
+#                 # Staff email
+#                 staff_html_message = render_to_string('emails/order_notification_staff.html', email_context)
+#                 staff_plain_message = render_to_string('emails/order_notification_staff.txt', email_context)
+#                 send_mail(
+#                     subject=f'New Order #{order.id} - PrintShop Naija',
+#                     message=staff_plain_message,
+#                     from_email=settings.DEFAULT_FROM_EMAIL,
+#                     recipient_list=settings.STAFF_EMAILS,
+#                     html_message=staff_html_message,
+#                     fail_silently=True,
+#                 )
+
 #                 return Response({'status': 'Payment verified', 'order_id': order.id})
 #         return Response({'error': 'Payment verification failed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -253,7 +286,16 @@
 #         serializer = self.get_serializer(order)
 #         return Response(serializer.data)
 
-# api/views.py
+#     @action(detail=True, methods=['post'])
+#     def cancel(self, request, pk=None):
+#         order = self.get_object()
+#         if order.status != 'pending':
+#             return Response({'error': 'Only pending orders can be cancelled'}, status=status.HTTP_400_BAD_REQUEST)
+#         order.status = 'cancelled'
+#         order.save()
+#         serializer = self.get_serializer(order)
+#         return Response({'message': 'Order cancelled successfully', 'order': serializer.data}, status=status.HTTP_200_OK)
+
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -262,6 +304,8 @@ from .models import Product, ProductCategory, Cart, CartItem, Order, OrderItem, 
 from .serializers import ProductSerializer, ProductCategorySerializer, CartSerializer, CartItemSerializer, OrderSerializer
 from django.db.models import Q
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 import requests
 from decimal import Decimal
 
@@ -366,7 +410,7 @@ class CartViewSet(viewsets.ModelViewSet):
             cart_item.save()
             return Response({'status': 'quantity updated'})
         except CartItem.DoesNotExist:
-            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['delete'], url_path=r'items/(?P<item_id>\d+)')
     def remove_item(self, request, pk=None, item_id=None):
@@ -450,6 +494,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                 additional_info=item.additional_info,
                 color=item.color
             )
+
         cart.items.all().delete()
         serializer = OrderSerializer(order)
         return Response({'id': order.id, **serializer.data}, status=status.HTTP_201_CREATED)
@@ -466,7 +511,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         }
         data = {
             'email': request.user.email,
-            'amount': int(order.total_amount * 100),  # Convert to kobo
+            'amount': int(order.total_amount * 100),
             'currency': 'NGN',
             'callback_url': f'{settings.FRONTEND_URL}/order/summary?orderId={order.id}',
         }
@@ -492,6 +537,50 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order.status = 'processing'
                 order.transaction_id = reference
                 order.save()
+
+                # Prepare email context with absolute design file URLs
+                order_items = order.items.all()
+                email_context = {
+                    'user': self.request.user,
+                    'order': order,
+                    'order_items': [
+                        {
+                            'product_name': item.product.name,
+                            'quantity': item.quantity,
+                            'price': item.price,
+                            'design_file_url': f"{settings.SITE_URL}{item.design_file.url}" if item.design_file else None,
+                        }
+                        for item in order_items
+                    ],
+                    'frontend_url': settings.FRONTEND_URL,
+                    'site_url': settings.SITE_URL,
+                    'default_from_email': settings.DEFAULT_FROM_EMAIL,
+                }
+
+                # User email
+                user_html_message = render_to_string('emails/order_confirmation_user.html', email_context)
+                user_plain_message = render_to_string('emails/order_confirmation_user.txt', email_context)
+                send_mail(
+                    subject='Order Confirmation - PrintShop Naija',
+                    message=user_plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[self.request.user.email],
+                    html_message=user_html_message,
+                    fail_silently=True,
+                )
+
+                # Staff email
+                staff_html_message = render_to_string('emails/order_notification_staff.html', email_context)
+                staff_plain_message = render_to_string('emails/order_notification_staff.txt', email_context)
+                send_mail(
+                    subject=f'New Order #{order.id} - PrintShop Naija',
+                    message=staff_plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=settings.STAFF_EMAILS,
+                    html_message=staff_html_message,
+                    fail_silently=True,
+                )
+
                 return Response({'status': 'Payment verified', 'order_id': order.id})
         return Response({'error': 'Payment verification failed'}, status=status.HTTP_400_BAD_REQUEST)
 

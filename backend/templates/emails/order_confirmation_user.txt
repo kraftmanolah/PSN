@@ -1,0 +1,25 @@
+Dear {{ user.first_name|default:"Customer" }},
+
+Your order (#{{ order.id }}) was placed on {{ order.created_at|date:"F d, Y" }}. Here are the details:
+
+Order Items:
+{% for item in order.items.all %}
+- {{ item.product.name }}
+  Quantity: {{ item.quantity }}
+  Price: {{ item.product.currency }}{{ item.price }}
+  {% if item.color %}Color: {{ item.color }}{% endif %}
+  {% if item.additional_info %}Additional Info: {{ item.additional_info }}{% endif %}
+  {% if item.design_file %}Design File: {{ item.design_file.url }}{% endif %}
+{% endfor %}
+
+Total: {{ order.total_amount }} {{ order.items.first.product.currency }}
+Delivery: {{ order.delivery_option|title }}
+{% if order.delivery_option == "delivery" and order.delivery %}
+Address: {{ order.delivery.address }}, {{ order.delivery.city }}, {{ order.delivery.state }}{% if order.delivery.postcode %}, {{ order.delivery.postcode }}{% endif %}
+{% endif %}
+
+We'll notify you when your order is processed. Contact us at info@printshopnaija.com.ng.
+
+Best,
+PrintShop Naija
+{{ frontend_url }}
